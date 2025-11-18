@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
+#define ull unsigned long long
 #define pii pair<ll, ll>
 #define all(x) x.begin(), x.end()
 #define allr(x) x.rbegin(), x.rend()
@@ -15,28 +16,28 @@ const ll INF = 1e18;
 
 //---------- Struggle starts from here ----------//
 
-ll L, R;
-ll gen;
+ll l, r, gen;
+vector<ull> isp, isp2;
 vector<ll> sqrt_r;
-vector<unsigned long long> isp, isp2;
 
-inline void set_composite(vector<unsigned long long> &b, ll idx) {
-      b[idx >> 6] |= (1ULL << (idx & 63));
+inline bool is_composite(vector<ull> &p, ll x) {
+      return p[x / 64] & (1ull << (x & 63));
 }
 
-inline bool is_composite(const vector<unsigned long long> &b, ll idx) {
-      return b[idx >> 6] & (1ULL << (idx & 63));
+inline void set_composite(vector<ull> &p, ll x) {
+      p[x / 64] |= (1ull << (x & 63));
 }
 
 void sieve() {
       sqrt_r.clear();
+      if (gen < 2) return;
+
       ll n = gen;
-      if (n < 2) return;
-      ll bits = n + 1;
-      ll sz = (bits + 63) >> 6;
-      isp.assign(sz, 0ULL);
+      ll sz = (n + 63) / 64;
+      isp.assign(sz, 0ull);
       set_composite(isp, 0);
       if (n >= 1) set_composite(isp, 1);
+
       for (ll i = 2; i * i <= n; i++) {
             if (!is_composite(isp, i)) {
                   for (ll j = i * i; j <= n; j += i) {
@@ -44,37 +45,42 @@ void sieve() {
                   }
             }
       }
+
       for (ll i = 2; i <= n; i++) {
             if (!is_composite(isp, i)) sqrt_r.push_back(i);
       }
 }
 
 void segmented_sieve() {
-      if (R < 2) {
-            cout << '\n';
+      if (r < 2) {
+            cout << endl;
             return;
       }
-      if (L < 2) L = 2;
-      ll len = R - L + 1;
-      ll sz = (len + 63) >> 6;
-      isp2.assign(sz, 0ULL);
+
+      l = max(l, 2ll);
+      ll len = r - l + 1;
+      ll sz  = (len + 63) / 64;
+
+      isp2.assign(sz, 0ull);
+
       for (auto u : sqrt_r) {
-            ll uu = 1LL * u * u;
-            if (uu > R) break;
-            ll st = max(uu, ((L + u - 1) / u) * 1LL * u);
-            for (ll j = st; j <= R; j += u) {
-                  set_composite(isp2, j - L);
+            ll st = 1ull * u * u;
+            if (st > r) break;
+            st = max(st, ((l + u - 1) / u) * 1ll * u);
+            for (ll i = st; i <= r; i += u) {
+                  set_composite(isp2, i - l);
             }
       }
+
       for (ll i = 0; i < len; i++) {
-            if (!is_composite(isp2, i)) cout << L + i << ' ';
+            if (!is_composite(isp2, i)) cout << l + i << ' ';
       }
-      cout << '\n';
+      cout << endl;
 }
 
 void solve() {
-      cin >> L >> R;
-      gen = sqrtl(R) + 1;
+      cin >> l >> r;
+      gen = sqrt(r);
 }
 
 int main() {
@@ -82,9 +88,9 @@ int main() {
       ll t = 1;
       // cin >> t;
       for (ll tc = 1; tc <= t; tc++) {
+            // cout << "Case " << tc << ": ";
             solve();
             sieve();
             segmented_sieve();
       }
-      return 0;
 }
